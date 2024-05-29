@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link , useNavigate } from 'react-router-dom';
+import SummaryApi from '../../common';
+import { toast } from 'react-toastify';
 const Login = () => {
 
   // enter-show-confirm password
@@ -8,18 +10,8 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
 
-  const handlePasswordChange = (event) => {
-    setPassword(event.target.value);
-  };
 
-  const handleConfirmPasswordChange = (event) => {
-    setConfirmPassword(event.target.value);
-    if (event.target.value !== password) {
-      setError('Passwords do not match');
-    } else {
-      setError('');
-    }
-  };
+  const navigate = useNavigate()
 
   const toggleShowPassword = () => {
     setShowPassword(!showPassword);
@@ -37,7 +29,7 @@ const Login = () => {
   };
   // Enter user name and password
   const [data,setData] = useState({
-    user :"",
+    name :"",
     password : "",
     confirmPassword : "",
   })
@@ -53,11 +45,28 @@ const Login = () => {
     })
   }
 
-  const handleSubmit = (e) =>{
+  const handleSubmit = async(e) =>{
     e.preventDefault()
-  }
+    if (data.password === data.confirmPassword){
+      const dataResponse = await fetch(SummaryApi.signUp.url,{
+        method : SummaryApi.signUp.method,
+        headers : {
+          "content-type" : "application/json"
+        },
+        body : JSON.stringify(data)
+    })
+    const dataApi = await dataResponse.json()
 
-  console.log("data login", data)
+      if (dataApi.success){
+        toast.success(dataApi.message)
+      }
+      if (dataApi.error){
+        toast.error(dataApi.message)
+      }
+    } else {
+      toast.error("Please check password and confirm password")
+    }
+  }
     return(
         <body className="loginBody">
           <div id="containerLogin" className={`containerLogin ${isActive ? 'active' : ''}`}>
@@ -67,21 +76,23 @@ const Login = () => {
                   <input 
                     type="text" 
                     placeholder="User Name" 
-                    name='user'
-                    value={data.user}
+                    name='name'
+                    value={data.name}
                     onChange={handleOnChange} 
                   />
                   <input 
                     type={showPassword ? 'text' : 'password'}
-                    value={password}
-                    onChange={handlePasswordChange}
+                    value={data.password}
+                    name='password'
+                    onChange={handleOnChange}
                     placeholder="Enter your password" 
                   />
                   <input
                     type={showPassword ? 'text' : 'password'}
-                    value={confirmPassword}
-                    onChange={handleConfirmPasswordChange}
                     placeholder="Confirm your password"
+                    value={data.confirmPassword}
+                    name='confirmPassword'
+                    onChange={handleOnChange}
                   />
                   <span>
                   {error && <p className="error">{error}</p>}
