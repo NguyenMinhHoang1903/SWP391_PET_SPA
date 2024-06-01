@@ -1,17 +1,16 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { Link , useNavigate } from 'react-router-dom';
 import SummaryApi from '../../common';
 import { toast } from 'react-toastify';
+import Context from '../../context';
 const Login = () => {
 
-  // enter-show-confirm password
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState('');
-
-
+  const [error] = useState('')
   const navigate = useNavigate()
+  const {fetchUserDetails} = useContext(Context)
+
+  const [showPassword, setShowPassword] = useState(false);
+  
 
   const toggleShowPassword = () => {
     setShowPassword(!showPassword);
@@ -67,6 +66,30 @@ const Login = () => {
       toast.error("Please check password and confirm password")
     }
   }
+
+
+  const handleLogin = async(e) =>{
+    e.preventDefault()
+    const dataResponseLogin = await fetch(SummaryApi.signIn.url,{
+      method : SummaryApi.signIn.method,
+      credentials : 'include',
+      headers : {
+        "content-type" : "application/json"
+      },
+      body : JSON.stringify(data)
+    })
+
+    const dataApiLogin = await dataResponseLogin.json()
+    if(dataApiLogin.success){
+      toast.success(dataApiLogin.message)
+      navigate('/')
+      fetchUserDetails()
+    }
+
+    if(dataApiLogin.error){
+      toast.error(dataApiLogin.message)
+    }
+  }
     return(
         <body className="loginBody">
           <div id="containerLogin" className={`containerLogin ${isActive ? 'active' : ''}`}>
@@ -109,7 +132,7 @@ const Login = () => {
               </form>
             </div>
             <div className="form-containerLogin Loginsign-in">
-              <form onSubmit={handleSubmit}>
+              <form onSubmit={handleLogin}>
                 <h1>Sign In</h1>
                 <div className="loginButton google">
                   <img src= "Google_Icons.png" alt="" className="icon" />
@@ -119,8 +142,8 @@ const Login = () => {
                 <input 
                   type="text" 
                   placeholder="User Name"
-                  name='user'
-                  value={data.user}
+                  name='name'
+                  value={data.name}
                   onChange={handleOnChange} />
                 <input 
                   type={showPassword ? 'text' : 'password'}
@@ -139,7 +162,7 @@ const Login = () => {
                   Show Password
                   </div>
                 </div>
-                <Link to = {'/forgot-password'} className='block w-fit ml-auto hover:underline'>
+                <Link to = {'/changepassword'} className='block w-fit ml-auto hover:underline'>
                   Forgot password ?
                 </Link>
                 <button>Sign In</button>

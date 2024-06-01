@@ -1,6 +1,26 @@
 import { Link } from "react-router-dom";
+import SummaryApi from "../../common";
+import { toast } from "react-toastify";
+import { useDispatch, useSelector } from "react-redux";
+import { setUserDetails } from "../../store/userSlice";
 
-const Header = ({user}) => {
+const Header = () => {
+  const user = useSelector(state => state?.user?.user)
+  const dispatch = useDispatch()
+  const handleLogout = async() => {
+    const fetchData = await fetch(SummaryApi.logout_user.url,{
+      method : SummaryApi.logout_user.method,
+      credentials : 'include'
+    })
+    const data = await fetchData.json()
+    if(data.success){
+      toast.success(data.message)
+      dispatch(setUserDetails(null))
+    }
+    if(data.error){
+      toast.error(data.message)
+    }
+  }
   return (
     <div className="navbar-container">
     <div className="navbar">
@@ -18,21 +38,28 @@ const Header = ({user}) => {
           <div>Review Combo</div>
           <div>Member</div>
           </div>
-          
-          <div >
-          {
-          user ? (
-            <ul classname="navbar-right flex items-center gap-4">
+
+          <div className="rightItem">
+            <div className="userIcon">
+              <img src = "userIcon.png" alt="userIcon" />
+            </div>
+          </div>
+          <div>
+            
+            <ul classname="navbar-right ">
               <div className="listItem">
-              </div>
-              <div className="listItem" style={{color: "white"}}>{user.displayName}</div>
-              <div className="listItem" style={{backgroundColor: "black" , color: "white", textAlign: "center"}}>
-                Logout
+              {
+              user?._id ? (
+                <div onClick={handleLogout}  className="login-button flex items-center gap-4">Logout</div>
+              )
+              : (
+              <Link className="login-button flex items-center gap-4" to ="login">Login</Link>
+              )
+            }
+          
               </div>
             </ul>
-          ) : (<Link className="login-button flex items-center gap-4" to ="login">Login</Link>)
-    }
-          </div>
+        </div>
 
       </div>
     </div>
